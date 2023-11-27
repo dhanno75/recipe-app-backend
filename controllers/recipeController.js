@@ -1,5 +1,6 @@
 import Recipe from "../models/recipeModel.js";
 import User from "../models/userModel.js";
+import { ObjectId } from "mongodb";
 
 export const createRecipe = async (req, res, next) => {
   try {
@@ -91,6 +92,37 @@ export const favoriteARecipe = async (req, res, next) => {
       message: "Something went wrong, please try after sometime.",
     });
   }
+};
+
+export const getFavoriteRecipe = async (req, res, next) => {
+  // try {
+  const favoriteRecipes = await User.aggregate([
+    {
+      $match: {
+        _id: new ObjectId(req.user._id),
+      },
+    },
+    {
+      $lookup: {
+        from: "recipes",
+        localField: "favoriteRecipes",
+        foreignField: "_id",
+        as: "results",
+      },
+    },
+  ]);
+  console.log(favoriteRecipes);
+
+  res.status(200).json({
+    status: "success",
+    data: favoriteRecipes,
+  });
+  // } catch (err) {
+  //   res.status(500).json({
+  //     status: "fail",
+  //     message: "Something went wrong, please try after sometime.",
+  //   });
+  // }
 };
 
 export const deleteRecipe = async (req, res, async) => {
